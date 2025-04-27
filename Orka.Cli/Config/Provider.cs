@@ -1,21 +1,21 @@
-﻿using YamlDotNet.Serialization;
-namespace Orka.Cli.Config;
-
-
-public class ProviderRoot
-{
-    [YamlMember(Alias = "providers")]
-    public List<Provider> Providers { get; set; } = new();
-}
-
+﻿namespace Orka.Cli.Config;
 
 public class Provider
 {
-    [YamlMember(Alias = "name")]
-    public string Name { get; set; } = string.Empty;
-    [YamlMember(Alias = "type")]
-    public string Type { get; set; } = string.Empty;
 
-    [YamlMember(Alias = "config")]
-    public ProviderConfig Config { get; set; } = new ProviderConfig();
+
+    public string Name { get; set; } = "";
+    public string Type { get; set; } = "";
+    public Dictionary<string, string> Config { get; set; } = [];
+    public static void PrintProviders(Dictionary<string, Provider> providers)
+    {
+        foreach (var p in providers)
+        {
+            Console.WriteLine($"- {p.Key} ({p.Value.Type})");
+            foreach (var kv in p.Value.Config)
+            {
+                Console.WriteLine($"  - {kv.Key}: {kv.Value}");
+            }
+        }
+    }
 }

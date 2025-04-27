@@ -9,10 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Bicep.Core" Version="0.34.44" />
+    <PackageReference Include="Azure.Bicep.Types" Version="0.5.110" />  
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.47.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.47.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Agents.OpenAI" Version="1.47.0-preview" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.10" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.3.25171.5" />
+
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="workflow.yaml">
+    <None Update="orka.bicep">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
