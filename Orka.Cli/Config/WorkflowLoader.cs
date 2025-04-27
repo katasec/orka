@@ -53,7 +53,7 @@ public static class WorkflowLoader
                                     elements.Add(stringSyntax.ToString().Trim('"'));
                                 }
                             }
-                            orkResource.Inputs[key] = JsonSerializer.Serialize(elements);
+                            orkResource.Inputs[key] = elements;
                         }
                         else
                         {

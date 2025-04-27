@@ -20,10 +20,27 @@ public class ResourceLoader
             Console.WriteLine($"[WARN] No resource found in {ResourcesPath}");
             return new NoOpResourceHandler();
         }
+
         foreach (var dll in files)
         {
             var asm = AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
-            foreach (var type in asm.GetTypes())
+
+            Type[] types;
+            try
+            {
+                types = asm.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                Console.WriteLine($"== ReflectionTypeLoadException when loading {dll} ==");
+                foreach (var loaderException in ex.LoaderExceptions)
+                {
+                    Console.WriteLine(loaderException?.ToString());
+                }
+                continue; // Skip this assembly and try the next one
+            }
+
+            foreach (var type in types)
             {
                 if (!type.IsInterface)
                 {
