@@ -12,6 +12,6 @@ public class ResourceLoader
         }
 
         // 🛡️ Instead of returning null, fallback to NoOpHandler
-        return new NoOpHandler();
+        return new NoOpResourceHandler();
     }
 }

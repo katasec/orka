@@ -2,7 +2,7 @@
 
 namespace Orka.Cli.Resources;
 
-public class NoOpHandler : IOrkaResourceHandler
+public class NoOpResourceHandler : IOrkaResourceHandler
 {
     public async Task ExecuteAsync(OrkaResource step)
     {
