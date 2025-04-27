@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orka.Cli", "Orka.Cli\Orka.Cli.csproj", "{07175837-C823-4BC2-998B-36807D8F0864}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orka.Abstractions", "Orka.Abstractions\Orka.Abstractions.csproj", "{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +29,23 @@ Global
 		{07175837-C823-4BC2-998B-36807D8F0864}.Release|x64.Build.0 = Release|Any CPU
 		{07175837-C823-4BC2-998B-36807D8F0864}.Release|x86.ActiveCfg = Release|Any CPU
 		{07175837-C823-4BC2-998B-36807D8F0864}.Release|x86.Build.0 = Release|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Debug|x64.Build.0 = Debug|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Debug|x86.Build.0 = Debug|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Release|x64.ActiveCfg = Release|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Release|x64.Build.0 = Release|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Release|x86.ActiveCfg = Release|Any CPU
+		{6B037E3B-9882-4AD4-B7C2-BF756564FA8E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8FF5B8D1-4266-4DFA-95F6-6318DF012109}
 	EndGlobalSection
 EndGlobal
