@@ -1,71 +1,78 @@
 ﻿using Bicep.Core.Parsing;
 using Bicep.Core.Syntax;
+using Orka.Abstractions;
 using Orka.Cli.Config;
+using System.Text.Json;
 
 namespace Orka.Cli.Config;
 
 public static class WorkflowLoader
 {
-    public static Workflow Load(string path)
+    public static Workflow Load(string fileName)
     {
-        var sourceText = File.ReadAllText(path);
-
-        var parser = new Parser(sourceText);
-        var programSyntax = parser.Program();
-
-        var workflow = new Workflow
+        var path = Path.Combine(AppContext.BaseDirectory, fileName);
+        if (!File.Exists(path))
         {
-            Name = Path.GetFileNameWithoutExtension(path),
-            Steps = new List<OrkaResource>()
-        };
+            Console.WriteLine($"❌ Workflow file not found: {path}");
+            Environment.Exit(1);
+        }
 
-        foreach (var declaration in programSyntax.Declarations)
+        var parser = new Parser(File.ReadAllText(path));
+        var program = parser.Program();
+
+        var workflow = new Workflow();
+
+        foreach (var declaration in program.Declarations)
         {
-            if (declaration is not ResourceDeclarationSyntax resource)
-                continue;
+            if (declaration is not ResourceDeclarationSyntax resource) continue;
 
-            var orkaResource = new OrkaResource
+            var orkResource = new OrkaResource
             {
                 Name = resource.Name.IdentifierName,
-                Provider = resource.Type.ToString().Trim().Trim('\'')
+                Provider = resource.Type.ToString().Trim().Trim('\'', '"')
             };
 
-            // Parse properties block
             if (resource.Value is ObjectSyntax body &&
                 body.TryGetPropertyByName("properties")?.Value is ObjectSyntax props)
             {
-                // Parse input
                 if (props.TryGetPropertyByName("input")?.Value is ObjectSyntax input)
                 {
                     foreach (var prop in input.Properties)
                     {
                         var key = prop.TryGetKeyText();
-                        var val = prop.Value.ToString().Trim().Trim('\'');
+                        if (key is null)
+                            continue;
 
-                        if (key != null)
+                        if (prop.Value is ArraySyntax arraySyntax)
                         {
-                            orkaResource.Inputs[key] = val;
+                            var elements = new List<string>();
+                            foreach (var arrayItem in arraySyntax.Items)
+                            {
+                                if (arrayItem.Value is StringSyntax stringSyntax)
+                                {
+                                    elements.Add(stringSyntax.ToString().Trim('"'));
+                                }
+                            }
+                            orkResource.Inputs[key] = JsonSerializer.Serialize(elements);
                         }
                         else
                         {
-                            Console.WriteLine("[WARN] Found null key inside input block.");
+                            orkResource.Inputs[key] = prop.Value.ToString().Trim('\'', '"');
                         }
                     }
                 }
-
             }
 
-            // Parse dependsOn at top level
-            if (resource.Value is ObjectSyntax body2 &&
-                body2.TryGetPropertyByName("dependsOn")?.Value is ArraySyntax dependsArray)
+            if (resource.Value is ObjectSyntax dependsBody &&
+                dependsBody.TryGetPropertyByName("dependsOn")?.Value is ArraySyntax dependsOn)
             {
-                foreach (var item in dependsArray.Items)
+                foreach (var item in dependsOn.Items)
                 {
-                    orkaResource.DependsOn.Add(item.ToString().Trim().Trim('\''));
+                    orkResource.DependsOn.Add(item.ToString());
                 }
             }
 
-            workflow.Steps.Add(orkaResource);
+            workflow.Steps.Add(orkResource);
         }
 
         return workflow;

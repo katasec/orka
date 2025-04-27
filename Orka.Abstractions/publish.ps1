@@ -5,6 +5,18 @@ $outputPath = Join-Path $PWD.Path "bin" "release"
 $apiKey = "$env:NUGET_API_KEY"
 $nugetSource = "https://api.nuget.org/v3/index.json"
 
+
+# Delete existing package files
+ $nupkg = Get-ChildItem -r -i "*.nupkg"
+if ($nupkg) {
+    Write-Output "Deleting existing package files..."
+    foreach ($file in $nupkg) {
+        Remove-Item -Path $file.FullName -Force
+        Write-Output "Deleted: $($file.FullName)"
+    }
+}
+
+
 # Make sure output directory exists
 $outputPath = Join-Path $PWD.Path "bin" "release"
 if (-not (Test-Path -Path $outputPath)) {
@@ -26,7 +38,7 @@ Write-Output "Project Path: $projectPath"
 dotnet pack .  --configuration Release /p:PackageVersion=$gitTag
 
 # Find the generated .nupkg
-$nupkg = Get-ChildItem -r -i "*.nupkg" | Select-Object -First 1
+$nupkg = Get-ChildItem -r -i "*.nupkg" | Select-Object -Last 1
 
 if ($nupkg) {
     # Push the package

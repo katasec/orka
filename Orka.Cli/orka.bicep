@@ -2,8 +2,11 @@
   name: 'RunHelloWorld'
   properties: {
     input: {
-      shell: 'bash'
-      args: ['-c', 'echo Hello from Orka']
+      shell: 'powershell'
+      args: [
+          "-Command"
+          "Write-Output 'Hello from Orka'"
+      ]
     }
     timeoutSeconds: 60
   }

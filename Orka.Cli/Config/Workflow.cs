@@ -1,5 +1,6 @@
 ﻿using Bicep.Core.Parsing;
 using Bicep.Core.Syntax;
+using Orka.Abstractions;
 
 namespace Orka.Cli.Config;
 
