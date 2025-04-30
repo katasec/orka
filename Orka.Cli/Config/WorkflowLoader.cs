@@ -50,14 +50,27 @@ public static class WorkflowLoader
                             {
                                 if (arrayItem.Value is StringSyntax stringSyntax)
                                 {
-                                    elements.Add(stringSyntax.ToString().Trim('"'));
+                                    var literal = stringSyntax.TryGetLiteralValue();
+                                    if (literal is not null)
+                                    {
+                                        elements.Add(literal);
+                                    }
                                 }
                             }
-                            orkResource.Inputs[key] = elements;
+                            orkResource.Inputs[key] = elements; // ✅ Save List<string> directly
+                        }
+                        else if (prop.Value is StringSyntax stringSyntax)
+                        {
+                            var literal = stringSyntax.TryGetLiteralValue();
+                            orkResource.Inputs[key] = literal ?? stringSyntax.ToString().Trim('"');
+                        }
+                        else if (prop.Value is IntegerLiteralSyntax intSyntax)
+                        {
+                            orkResource.Inputs[key] = int.Parse(intSyntax.ToString());
                         }
                         else
                         {
-                            orkResource.Inputs[key] = prop.Value.ToString().Trim('\'', '"');
+                            orkResource.Inputs[key] = prop.Value.ToString()?.Trim('\'', '"');
                         }
                     }
                 }
@@ -74,6 +87,7 @@ public static class WorkflowLoader
 
             workflow.Steps.Add(orkResource);
         }
+
 
         return workflow;
     }

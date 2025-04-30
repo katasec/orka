@@ -22,7 +22,7 @@ public static class CommandExecutor
             return "No command found.";
         }
 
-        var command = raw.Trim('\'');
+        var command = raw?.ToString()?.Trim('\'');
 
         Log($"🛠 Executing: {command}");
 
@@ -71,7 +71,7 @@ public static class CommandExecutor
             return "No command found.";
         }
 
-        var command = raw.Trim('\'');
+        var command = raw?.ToString()?.Trim('\'');
 
         var psi = new ProcessStartInfo("cmd.exe", $"/c {command}")
         {
