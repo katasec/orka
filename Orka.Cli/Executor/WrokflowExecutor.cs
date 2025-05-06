@@ -1,5 +1,7 @@
-﻿using Orka.Cli.Config;
+﻿using Orka.Abstractions;
+using Orka.Cli.Config;
 using Orka.Cli.Resources;
+using System.Text.Json;
 
 namespace Orka.Cli.Executor;
 
@@ -20,16 +22,35 @@ public class WorkflowExecutor
 
             try
             {
-                // Get ResourceHandler for the current step
-                var resourceHandler = _resourceLoader.GetResourceHandler(step.Provider);
-                if (resourceHandler == null)
+                var handler = _resourceLoader.GetResourceHandler(step.Provider);
+                if (handler == null)
                 {
                     Console.WriteLine($"[SKIP] No plugin found for provider: {step.Provider}");
                     continue;
                 }
 
-                // Execute the step using the loaded resource handler
-                await resourceHandler.ExecuteAsync(step);
+                // Resolve the input type dynamically
+                object? typedInput = null;
+                if (handler is IOrkaResourceSchemaProvider schemaProvider)
+                {
+                    var inputType = schemaProvider.GetInputType();
+                    var inputJson = JsonSerializer.Serialize(step.Inputs);
+                    typedInput = JsonSerializer.Deserialize(inputJson, inputType);
+                }
+
+                // Pass both step and the typed input into the handler
+                if (typedInput != null)
+                {
+                    var method = handler.GetType().GetMethod("ExecuteAsync", new[] { typeof(OrkaResource), typedInput.GetType() });
+                    if (method != null)
+                    {
+                        var task = (Task)method.Invoke(handler, new object[] { step, typedInput })!;
+                        await task;
+                        continue;
+                    }
+                }
+
+                Console.WriteLine($"[ERROR] Plugin does not support typed execution for provider: {step.Provider}");
             }
             catch (Exception ex)
             {

@@ -4,10 +4,9 @@
     input: {
       shell: 'powershell'
       args: [
-          "-Command"
           "Write-Output 'Hello from Orka'"
       ]
+      timeoutSeconds: 60
     }
-    timeoutSeconds: 60
   }
 }

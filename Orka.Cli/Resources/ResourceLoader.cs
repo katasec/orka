@@ -1,7 +1,9 @@
 ﻿using Orka.Abstractions;
-using Orka.Cli.Resources;
+
 using System.Reflection;
 using System.Runtime.Loader;
+
+namespace Orka.Cli.Resources;
 
 public class ResourceLoader
 {

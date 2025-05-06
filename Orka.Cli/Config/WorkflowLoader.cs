@@ -1,8 +1,8 @@
 ﻿using Bicep.Core.Parsing;
 using Bicep.Core.Syntax;
 using Orka.Abstractions;
-using Orka.Cli.Config;
-using System.Text.Json;
+using Orka.Abstractions.Schema;
+using Orka.Cli.Resources;
 
 namespace Orka.Cli.Config;
 
@@ -26,53 +26,35 @@ public static class WorkflowLoader
         {
             if (declaration is not ResourceDeclarationSyntax resource) continue;
 
+            var provider = resource.Type.ToString().Trim('\'', '"');
+
             var orkResource = new OrkaResource
             {
                 Name = resource.Name.IdentifierName,
-                Provider = resource.Type.ToString().Trim().Trim('\'', '"')
+                Provider = provider
             };
 
-            if (resource.Value is ObjectSyntax body &&
-                body.TryGetPropertyByName("properties")?.Value is ObjectSyntax props)
-            {
-                if (props.TryGetPropertyByName("input")?.Value is ObjectSyntax input)
-                {
-                    foreach (var prop in input.Properties)
-                    {
-                        var key = prop.TryGetKeyText();
-                        if (key is null)
-                            continue;
+            var handler = new ResourceLoader().GetResourceHandler(provider);
+            var inputType = (handler as IOrkaResourceSchemaProvider)?.GetInputType();
 
-                        if (prop.Value is ArraySyntax arraySyntax)
-                        {
-                            var elements = new List<string>();
-                            foreach (var arrayItem in arraySyntax.Items)
-                            {
-                                if (arrayItem.Value is StringSyntax stringSyntax)
-                                {
-                                    var literal = stringSyntax.TryGetLiteralValue();
-                                    if (literal is not null)
-                                    {
-                                        elements.Add(literal);
-                                    }
-                                }
-                            }
-                            orkResource.Inputs[key] = elements; // ✅ Save List<string> directly
-                        }
-                        else if (prop.Value is StringSyntax stringSyntax)
-                        {
-                            var literal = stringSyntax.TryGetLiteralValue();
-                            orkResource.Inputs[key] = literal ?? stringSyntax.ToString().Trim('"');
-                        }
-                        else if (prop.Value is IntegerLiteralSyntax intSyntax)
-                        {
-                            orkResource.Inputs[key] = int.Parse(intSyntax.ToString());
-                        }
-                        else
-                        {
-                            orkResource.Inputs[key] = prop.Value.ToString()?.Trim('\'', '"');
-                        }
+            var schema = inputType is not null
+                ? SchemaHelper.GenerateSchemaFromType(inputType)
+                : new Dictionary<string, OrkaFieldType>();
+
+            if (resource.Value is ObjectSyntax body &&
+                body.TryGetPropertyByName("properties")?.Value is ObjectSyntax props &&
+                props.TryGetPropertyByName("input")?.Value is ObjectSyntax input)
+            {
+                foreach (var (key, fieldType) in schema)
+                {
+                    var prop = input.TryGetPropertyByName(key);
+                    if (prop == null || prop.Value == null)
+                    {
+                        Console.WriteLine($"[ERROR] Missing required input: '{key}' for provider '{provider}'");
+                        Environment.Exit(1);
                     }
+
+                    orkResource.Inputs[key] = ParseSyntaxValue(fieldType, prop.Value);
                 }
             }
 
@@ -88,7 +70,32 @@ public static class WorkflowLoader
             workflow.Steps.Add(orkResource);
         }
 
-
         return workflow;
     }
+
+    private static object ParseSyntaxValue(OrkaFieldType type, SyntaxBase syntax)
+    {
+        return type switch
+        {
+            OrkaFieldType.String when syntax is StringSyntax ss =>
+                ss.TryGetLiteralValue() ?? ss.ToString().Trim('"'),
+
+            OrkaFieldType.Int when syntax is IntegerLiteralSyntax intSyntax =>
+                int.Parse(intSyntax.ToString()),
+
+            OrkaFieldType.ArrayOfStrings when syntax is ArraySyntax array =>
+                array.Items
+                     .Select(i => i.Value as StringSyntax)
+                     .Where(s => s is not null)
+                     .Select(s =>
+                     {
+                         var literal = s!.TryGetLiteralValue();
+                         return literal ?? s.ToString().Trim('"');
+                     })
+                     .ToList(),
+
+            _ => syntax.ToString()
+        };
+    }
+
 }
